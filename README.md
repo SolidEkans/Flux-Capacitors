@@ -1,4 +1,4 @@
 # Flux-Capacitors
 Ryan Kachline
-Calvin Nelson
+Calvin Nelson 
 senior design timing box
