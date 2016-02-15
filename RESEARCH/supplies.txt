@@ -1,5 +1,8 @@
 
 usb socket
-
-
+probobly wont use
 http://www.showmecables.com/product/USB-A-Female-Connector.aspx
+
+
+atmega socket
+http://www.digikey.com/product-detail/en/A28-LC-TT/AE10004-ND/821758

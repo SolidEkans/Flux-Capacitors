@@ -1,0 +1,1 @@
+http://electronics.stackexchange.com/questions/67112/how-do-i-create-a-permanent-application-from-something-prototyped-with-arduino
