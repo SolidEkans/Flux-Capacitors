@@ -1,8 +1,15 @@
 
 usb socket
+probobly wont use
+http://www.showmecables.com/product/USB-A-Female-Connector.aspx
 
 
+<<<<<<< HEAD
 http://www.showmecables.com/product/USB-A-Female-Connector.aspx
 
 screw connectors to pcb
 https://www.robotics.org.za/index.php?route=product/product&product_id=60
+=======
+atmega socket
+http://www.digikey.com/product-detail/en/A28-LC-TT/AE10004-ND/821758
+>>>>>>> origin/master
