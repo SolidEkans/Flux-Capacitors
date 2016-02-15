@@ -3,3 +3,6 @@ usb socket
 
 
 http://www.showmecables.com/product/USB-A-Female-Connector.aspx
+
+screw connectors to pcb
+https://www.robotics.org.za/index.php?route=product/product&product_id=60
