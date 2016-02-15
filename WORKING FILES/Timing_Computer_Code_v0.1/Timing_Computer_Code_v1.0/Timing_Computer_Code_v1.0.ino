@@ -1,4 +1,4 @@
-double TPmS;              //Present period of Ignition events per microsecond of Engine
+double TPmicroS;          //Present period of Ignition events per microsecond of Engine
 double Dwell;             //The charge time for the coil in micro seconds
 double IGNTim;            //The ignition timing in degrees
 double Delay;             //Delay for Dwell Start
@@ -15,12 +15,12 @@ void toggle(){
 
 void setup() {
   // put your setup code here, to run once:
-  TPmS = 0;
+  TPmicroS = 0;
   Dwell = 3600;
-  IGNTim = -20;
+  IGNTim = -2;
   beginDel = 0;
   pinMode(2, INPUT);
-  attachInterrupt(digitalPinToInterrupt(2), toggle, RISING);
+  attachInterrupt(digitalPinToInterrupt(2), toggle, FALLING);
   pinMode(13, OUTPUT);
 }
 
@@ -28,11 +28,11 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(beginDel){
   temp = micros();
-  TPmS = ((double)temp - (double)systemCLK);
+  TPmicroS = ((double)temp - (double)systemCLK);
   systemCLK = temp;
   beginDel = 0;
 
-  Delay = (TPmS) + (0.79*(((IGNTim + 10.0) / 90.0) * TPmS)) - (Dwell);
+  Delay = (TPmicroS) + (0.79*(((IGNTim + 10.0) / 90.0) * TPmicroS)) - (Dwell);
   //Delay = Delay - (double)(micros() - systemCLK);
 
   //Delays until proper dwell start time
