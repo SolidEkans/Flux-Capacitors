@@ -1,0 +1,2 @@
+pwm pins 11 12
+digital 0-4
