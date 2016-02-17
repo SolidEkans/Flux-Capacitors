@@ -1,11 +1,13 @@
-double TPmS;              //Present period of Ignition events per millisecond of Engine
-double Dwell;             //The charge time for the coil in milliseconds
+int64_t TPmS;             //Present period of Ignition events per microsecond of Engine
+int64_t Dwell;            //The charge time for the coil in microseconds
 double IGNDel;            //The ignition timing delay in degrees
-double DelayT;            //Delay of ignition timing in milliseconds
-double Delay;             //Delay for Dwell Start
+int64_t DelayT;           //Delay of ignition timing in microseconds
+int64_t Delay;            //Delay for Dwell Start
 unsigned long systemCLK;  //the previous value of the system clock
 unsigned long temp;       //temprary variable for getting system clock
 bool beginDel;
+
+void delayMicSeconds(int64_t);
 
 void toggle(){
   beginDel = 1;
@@ -14,8 +16,8 @@ void toggle(){
 void setup() {
   // put your setup code here, to run once:
   TPmS = 0;
-  Dwell = 3.6;
-  IGNDel = 15;
+  Dwell = 3600;
+  IGNDel = 5;
   beginDel = 0;
   pinMode(2, INPUT);
   attachInterrupt(digitalPinToInterrupt(2), toggle, FALLING);
@@ -26,25 +28,36 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(beginDel){
     temp = micros();
-    TPmS = ((double)temp - (double)systemCLK) / 1000;
+    TPmS = temp - systemCLK;
     systemCLK = temp;
     beginDel = 0;
     
-    DelayT = 1.05 * (IGNDel / 90.0) * TPmS;
+    DelayT = (IGNDel / 90) * TPmS;
     if(DelayT <= Dwell){
-      delay(DelayT);
+      delayMicSeconds(DelayT-200);
       digitalWrite(13, LOW);  
       Delay = TPmS - Dwell;
-      delay(Delay);
+      delayMicSeconds(Delay-50);
       digitalWrite(13, HIGH);      
     }else{
       Delay = DelayT - Dwell;
       
       //Delays until proper dwell start time
-      delay(Delay);
+      delayMicSeconds(Delay-100);
       digitalWrite(13, HIGH);
-      delay(Dwell);
+      delayMicSeconds(Dwell-100);
       digitalWrite(13, LOW);
     }
   }
 }
+
+void delayMicSeconds(int64_t del){
+  while(del > 16383){
+    delayMicroseconds(16383);
+    del -= 16383;    
+  }
+  delayMicroseconds(del);
+}
+
+
+
