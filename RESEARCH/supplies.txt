@@ -11,5 +11,5 @@ screw connectors to pcb
 https://www.robotics.org.za/index.php?route=product/product&product_id=60
 =======
 atmega socket
-http://www.digikey.com/product-detail/en/A28-LC-TT/AE10004-ND/821758
+http://www.digikey.com/product-detail/en/4828-3004-CP/3M5480-ND/1133633
 >>>>>>> origin/master

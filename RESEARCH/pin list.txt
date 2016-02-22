@@ -1,2 +1,4 @@
 pwm pins 11 12
-digital 0-4
+digital 0-3
+analog 0-1
+
