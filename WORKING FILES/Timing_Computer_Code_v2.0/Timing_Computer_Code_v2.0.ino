@@ -16,45 +16,45 @@ void toggle(){
 void setup() {
   // put your setup code here, to run once:
   TPmS = 0;
-  Dwell = 3600;
-  IGNDel = 5;
+  Dwell = 3500;
+  IGNDel = 9;
   beginDel = 0;
   pinMode(2, INPUT);
   attachInterrupt(digitalPinToInterrupt(2), toggle, FALLING);
-  pinMode(13, OUTPUT);
+  pinMode(1, OUTPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   if(beginDel){
     temp = micros();
     TPmS = temp - systemCLK;
     systemCLK = temp;
-    beginDel = 0;
     
-    DelayT = (IGNDel / 90) * TPmS;
+    DelayT = ((IGNDel * TPmS) / 90);
     if(DelayT <= Dwell){
-      delayMicSeconds(DelayT-200);
-      digitalWrite(13, LOW);  
-      Delay = TPmS - Dwell;
-      delayMicSeconds(Delay-50);
-      digitalWrite(13, HIGH);      
+      Delay = (TPmS - Dwell);
+      
+      delayMicSeconds(DelayT);
+      digitalWrite(1, LOW);  
+      delayMicSeconds((Delay - 350));
+      digitalWrite(1, HIGH);
     }else{
-      Delay = DelayT - Dwell;
+      Delay = (DelayT - Dwell);
       
       //Delays until proper dwell start time
-      delayMicSeconds(Delay-100);
-      digitalWrite(13, HIGH);
-      delayMicSeconds(Dwell-100);
-      digitalWrite(13, LOW);
+      delayMicSeconds(Delay);
+      digitalWrite(1, HIGH);
+      delayMicSeconds(Dwell);
+      digitalWrite(1, LOW);
     }
+    beginDel = 0;
   }
 }
 
 void delayMicSeconds(int64_t del){
-  while(del > 16383){
-    delayMicroseconds(16383);
-    del -= 16383;    
+  while(del > 16000){
+    delayMicroseconds(16000);
+    del = del - 16000;    
   }
   delayMicroseconds(del);
 }
