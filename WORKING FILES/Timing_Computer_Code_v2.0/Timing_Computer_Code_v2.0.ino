@@ -44,7 +44,7 @@ void setup() {
   // put your setup code here, to run once:
   TPmS = 0;
   Dwell = 3500;
-  IGNDel = 0;
+  IGNDel = 20;
   beginDel = 0;
   pinMode(2, INPUT);
   attachInterrupt(digitalPinToInterrupt(2), toggle, FALLING);
