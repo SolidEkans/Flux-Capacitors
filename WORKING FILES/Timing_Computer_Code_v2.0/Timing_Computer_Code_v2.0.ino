@@ -49,10 +49,20 @@ void setup() {
   pinMode(2, INPUT);
   attachInterrupt(digitalPinToInterrupt(2), toggle, FALLING);
   pinMode(1, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(8, INPUT);
+  digitalWrite(10, HIGH);
 }
 
 void loop() {
   //IGNDel = TimingLookup();
+
+  if(digitalRead(8) == HIGH){
+    IGNDel = 10;
+  }else{
+    IGNDel = 0;
+  }
+  
   if(beginDel){
     temp = micros();
     TPmS = temp - systemCLK;
