@@ -1,6 +1,6 @@
 int64_t TPmS;             //Present period of Ignition events per microsecond of Engine
 int64_t Dwell;            //The charge time for the coil in microseconds
-float IGNDel;            //The ignition timing delay in degrees
+int64_t IGNDel;           //The ignition timing delay in hundredths of a degree
 int64_t DelayT;           //Delay of ignition timing in microseconds
 int64_t Delay;            //Delay for Dwell Start
 unsigned long systemCLK;  //the previous value of the system clock
@@ -8,7 +8,7 @@ unsigned long temp;       //temprary variable for getting system clock
 bool beginDel;            //this boolean variable is triggered when the ignition 
                           //enable signal has reached a negative edge
 
-const int TimingOffset = 36;   //this is the base timing offset on the distributor
+const int TimingOffset = 3600;   //this is the base timing offset on the distributor
       
                              /*0    400  800  1200 1600 2000 2400 2800 3200 3600 4000 4400 4800 5200 5600 6000  RPM*/
 int SparkMAP[19][16] = /*15*/{{20,  23,  23,  25,  26,  27,  28,  29,  29,  29,  29,  29,  29,  29,  29,  29},
@@ -34,7 +34,20 @@ int SparkMAP[19][16] = /*15*/{{20,  23,  23,  25,  26,  27,  28,  29,  29,  29, 
 
 void delayMicSeconds(int64_t);
 
-float TimingLookup();
+int64_t TimingLookup();
+
+int64_t RPM;
+int64_t RPMindex;
+int64_t ModRPM;
+
+int64_t MAPVoltage;
+int64_t MAP;
+int64_t ModMAP;
+int64_t MAPindex;
+
+int64_t TempTiming1;
+int64_t TempTiming2;
+int64_t Timing;
 
 void toggle(){
   beginDel = 1;
@@ -55,24 +68,13 @@ void setup() {
 }
 
 void loop() {
-  IGNDel = TimingLookup();
-
-  if(IGNDel < 0){
-    IGNDel = 0;
-  }
-  
-  //if(digitalRead(8) == HIGH){
-  //  IGNDel = 10;
-  //}else{
-  //  IGNDel = 0;
-  //}
-  
   if(beginDel){
+    IGNDel = TimingLookup();
     temp = micros();
     TPmS = temp - systemCLK;
     systemCLK = temp;
     
-    DelayT = ((IGNDel * TPmS) / 90);
+    DelayT = (((double)IGNDel / 9000.0) * TPmS);
     
     //Make sure that we do not input a delay that is negative
     if(DelayT<110)
@@ -113,28 +115,45 @@ void delayMicSeconds(int64_t del){
 }
 
 //this function looks up the desired timing based on RPM and MAP 
-float TimingLookup(){
-int RPM = (1000000 / (4 * TPmS));
-int RPMindex = RPM / 400;
-int ModRPM = RPM % 400;
-
-int MAPVoltage = analogRead(A1);
-int MAP;
-int ModMAP;
-int MAPindex;
-
-float TempTiming1;
-float TempTiming2;
-float Timing;
+int64_t TimingLookup(){
+RPM = (10000000 / (4 * TPmS));
+RPMindex = RPM / 4000;
+ModRPM = RPM % 4000;
 
 //Transfer function for voltage to MAP
-MAP = (MAPVoltage * (5.0 / 1023.0) * 26.25) - 3.125;
-ModMAP = MAP % 5;
-MAPindex = MAP / 5;
+MAPVoltage = analogRead(A1);
+MAP = (MAPVoltage * (5.0 / 1023.0) * 2625) - 313;
+ModMAP = MAP % 500;
+MAPindex = MAP / 500;
 
-TempTiming1 = (float)SparkMAP[MAPindex][RPMindex] + (((float)SparkMAP[MAPindex][RPMindex + 1]-(float)SparkMAP[MAPindex][RPMindex]) * ((float)ModRPM / 400.0));
-TempTiming2 = (float)SparkMAP[MAPindex + 1][RPMindex] + (((float)SparkMAP[MAPindex + 1][RPMindex + 1]-(float)SparkMAP[MAPindex + 1][RPMindex]) * ((float)ModRPM / 400.0));
-Timing = (float)TimingOffset - ((float)TempTiming1 + (((float)TempTiming2 - (float)TempTiming1) * ((float)ModMAP / 5.0)));
+if((MAPindex <= 0)&&(RPMindex <= 0)){
+  TempTiming1 = 100*SparkMAP[0][0];
+  TempTiming2 = 100*SparkMAP[0][0];
+}else if((MAPindex > 18)&&(RPMindex > 15)){
+  TempTiming1 = 100*SparkMAP[18][15];
+  TempTiming2 = 100*SparkMAP[18][15];  
+}else if(RPMindex == 0){
+  TempTiming1 = 100*SparkMAP[MAPindex][0];
+  TempTiming2 = 100*SparkMAP[MAPindex + 1][0];
+}else if (RPMindex > 15){
+  TempTiming1 = 100*SparkMAP[MAPindex][15];
+  TempTiming2 = 100*SparkMAP[MAPindex + 1][15];
+}else{
+  if(MAPindex > 18){
+    TempTiming1 = (100*SparkMAP[MAPindex][RPMindex]) + ((100*SparkMAP[MAPindex][RPMindex + 1]-100*SparkMAP[MAPindex][RPMindex]) * ((double)ModRPM / 4000.0));
+  }else{
+    TempTiming1 = (100*SparkMAP[MAPindex][RPMindex]) + ((100*SparkMAP[MAPindex][RPMindex + 1]-100*SparkMAP[MAPindex][RPMindex]) * ((double)ModRPM / 4000.0));
+    TempTiming2 = (100*SparkMAP[MAPindex + 1][RPMindex]) + ((100*SparkMAP[MAPindex + 1][RPMindex + 1]-100*SparkMAP[MAPindex + 1][RPMindex]) * ((double)ModRPM / 4000.0));
+  }
+}
+
+if(MAPindex <= 0){
+  Timing = TimingOffset - TempTiming1;  
+}else if (MAPindex > 18){
+  Timing = TimingOffset - TempTiming1;
+}else{
+  Timing = TimingOffset - (TempTiming1 + ((TempTiming2 - TempTiming1) * ((double)ModMAP / 500.0)));
+}
 
 return Timing;
 }
