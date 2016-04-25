@@ -116,44 +116,44 @@ void delayMicSeconds(int64_t del){
 
 //this function looks up the desired timing based on RPM and MAP 
 int64_t TimingLookup(){
-RPM = (10000000 / (4 * TPmS));
-RPMindex = RPM / 4000;
-ModRPM = RPM % 4000;
+  RPM = (10000000 / (4 * TPmS));
+  RPMindex = RPM / 4000;
+  ModRPM = RPM % 4000;
 
-//Transfer function for voltage to MAP
-MAPVoltage = analogRead(A1);
-MAP = (MAPVoltage * (5.0 / 1023.0) * 2625) - 313;
-ModMAP = MAP % 500;
-MAPindex = MAP / 500;
+  //Transfer function for voltage to MAP
+  MAPVoltage = analogRead(A1);
+  MAP = (MAPVoltage * (5.0 / 1023.0) * 2625) - 313;
+  ModMAP = MAP % 500;
+  MAPindex = MAP / 500;
 
-if((MAPindex <= 0)&&(RPMindex <= 0)){
-  TempTiming1 = 100*SparkMAP[0][0];
-  TempTiming2 = 100*SparkMAP[0][0];
-}else if((MAPindex > 18)&&(RPMindex > 15)){
-  TempTiming1 = 100*SparkMAP[18][15];
-  TempTiming2 = 100*SparkMAP[18][15];  
-}else if(RPMindex == 0){
-  TempTiming1 = 100*SparkMAP[MAPindex][0];
-  TempTiming2 = 100*SparkMAP[MAPindex + 1][0];
-}else if (RPMindex > 15){
-  TempTiming1 = 100*SparkMAP[MAPindex][15];
-  TempTiming2 = 100*SparkMAP[MAPindex + 1][15];
-}else{
-  if(MAPindex > 18){
-    TempTiming1 = (100*SparkMAP[MAPindex][RPMindex]) + ((100*SparkMAP[MAPindex][RPMindex + 1]-100*SparkMAP[MAPindex][RPMindex]) * ((double)ModRPM / 4000.0));
+  //This chunk of code interpolates the values from the spark table
+  if((MAPindex <= 0)&&(RPMindex <= 0)){
+    TempTiming1 = 100*SparkMAP[0][0];
+    TempTiming2 = 100*SparkMAP[0][0];
+  }else if((MAPindex > 18)&&(RPMindex > 15)){
+    TempTiming1 = 100*SparkMAP[18][15];
+    TempTiming2 = 100*SparkMAP[18][15];  
+  }else if(RPMindex == 0){
+    TempTiming1 = 100*SparkMAP[MAPindex][0];
+    TempTiming2 = 100*SparkMAP[MAPindex + 1][0];
+  }else if (RPMindex > 15){
+    TempTiming1 = 100*SparkMAP[MAPindex][15];
+    TempTiming2 = 100*SparkMAP[MAPindex + 1][15];
   }else{
-    TempTiming1 = (100*SparkMAP[MAPindex][RPMindex]) + ((100*SparkMAP[MAPindex][RPMindex + 1]-100*SparkMAP[MAPindex][RPMindex]) * ((double)ModRPM / 4000.0));
-    TempTiming2 = (100*SparkMAP[MAPindex + 1][RPMindex]) + ((100*SparkMAP[MAPindex + 1][RPMindex + 1]-100*SparkMAP[MAPindex + 1][RPMindex]) * ((double)ModRPM / 4000.0));
+    if(MAPindex > 18){
+      TempTiming1 = (100*SparkMAP[MAPindex][RPMindex]) + ((100*SparkMAP[MAPindex][RPMindex + 1]-100*SparkMAP[MAPindex][RPMindex]) * ((double)ModRPM / 4000.0));
+    }else{
+      TempTiming1 = (100*SparkMAP[MAPindex][RPMindex]) + ((100*SparkMAP[MAPindex][RPMindex + 1]-100*SparkMAP[MAPindex][RPMindex]) * ((double)ModRPM / 4000.0));
+      TempTiming2 = (100*SparkMAP[MAPindex + 1][RPMindex]) + ((100*SparkMAP[MAPindex + 1][RPMindex + 1]-100*SparkMAP[MAPindex + 1][RPMindex]) * ((double)ModRPM / 4000.0));
+    }
   }
-}
-
-if(MAPindex <= 0){
-  Timing = TimingOffset - TempTiming1;  
-}else if (MAPindex > 18){
-  Timing = TimingOffset - TempTiming1;
-}else{
-  Timing = TimingOffset - (TempTiming1 + ((TempTiming2 - TempTiming1) * ((double)ModMAP / 500.0)));
-}
+  if(MAPindex <= 0){
+    Timing = TimingOffset - TempTiming1;  
+  }else if (MAPindex > 18){
+    Timing = TimingOffset - TempTiming1;
+  }else{
+    Timing = TimingOffset - (TempTiming1 + ((TempTiming2 - TempTiming1) * ((double)ModMAP / 500.0)));
+  }
 
 return Timing;
 }
